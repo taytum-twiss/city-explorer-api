@@ -6,14 +6,14 @@ const express = require('express');
 const cors = require('cors'); 
 const axios = require('axios');
 const weather = require('./data/weather.json');
-const { response } = require('express');
+
 
 // app to use...
 const app = express();
 app.use(cors());
 
 // set the port variable 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3001;
 
 // testing the home route to make sure the server is running correctly 
 app.get('/', (request, response) => {
@@ -27,18 +27,17 @@ app.get('/weather', async (request, response) => {
 
     console.log("lat, lon", lat, lon)
 
+
     const url = `https://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_API_KEY}&days=7&lat=${lat}&lon=${lon}`;
     console.log(url);
+
+    const weatherData = await axios.get(url);
+    console.log(weatherData.data.data)
     
     try{
-        const weatherData = await axios.get(url);
-        console.log(weatherData.data.data)
-        
-            // using each data point from the static data of the city that the user searched, create an array of `Forecast` objects, on for each day.
-            const weatherArray = weatherData.data.data.map(day => new Forecast(day));
+        const weatherArray = weatherData.data.data.map(day => new Forecast(day));
+        response.status(200).send(weatherArray); 
     
-            // send the full array back to the client who requested data from the `weather` endpoint.
-            response.status(200).send(weatherArray); 
     } catch(error) {
         //if the user did not serach for one of the three cities that we have information abput (Seattle,Paris, or Amman), return an error.
         console.log(error);
